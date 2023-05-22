@@ -1,8 +1,6 @@
-# NestJS Boilerplate (WIP)
+# VirtuHire Backend
 
-This project is still a work in progress. There may be major changes.
-
-## Features
+## 🖥️ Tech Stack
 
 This is a boilerplate project for NestJS. It includes the following:
 
@@ -22,16 +20,3 @@ This is a boilerplate project for NestJS. It includes the following:
 - 📱 Device login history with logout all devices feature
 - ⚠️ Alerting users of new device login, password changes, and email changes through notifications via email
 - 💂 CASL for authorization
-
-## Requirements
-
-- TBD
-
-## To Do
-
-- [ ] Seperate worker and the main app, so that the worker can be deployed separately. Plan to use `turborepo` for this.
-- [ ] Add unit and integration tests
-- [ ] API documentation
-- [ ] Better Email templates
-- [ ] Better http error message code
-- [ ] Create frontend implementation using NextJS and Flutter.
