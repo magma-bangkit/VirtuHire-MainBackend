@@ -9,47 +9,53 @@ export interface IApiErrorMessage {
 export const ApiErrorMessage = {
   INTERNAL_SERVER_ERROR: {
     code: 'INTERNAL_SERVER_ERROR',
-    message: 'Something went wrong',
+    message: 'An error occurred on the server',
     httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
   },
   UNAUTHORIZED: {
     code: 'UNAUTHORIZED',
-    message: 'You are not logged in',
+    message: 'You do not have access to this resource',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   TOKEN_EXPIRED: {
     code: 'TOKEN_EXPIRED',
-    message: 'Your token has expired, please login again',
+    message: 'Your token has expired, please log in again',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   TOKEN_INVALID: {
     code: 'TOKEN_INVALID',
-    message: 'Your token is invalid, please login again',
+    message: 'Your token is invalid, please log in again',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   TOKEN_REVOKED: {
     code: 'TOKEN_REVOKED',
-    message: 'Your token has been revoked, please login again',
+    message: 'Your token has been revoked, please log in again',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   TOKEN_NOT_FOUND_REQ: {
     code: 'TOKEN_NOT_FOUND',
-    message: 'Please, provide a token',
+    message: 'Token not found',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   USER_EMAIL_REGISTERED: {
     code: 'USER_EMAIL_REGISTERED',
-    message: 'User already register with the same email',
+    message: 'Email is already registered',
     httpCode: HttpStatus.CONFLICT,
+  },
+  USER_HAS_NO_PROFILE: {
+    code: 'USER_HAS_NO_PROFILE',
+    message:
+      'User has not filled out a profile. Please fill out the profile first',
+    httpCode: HttpStatus.FORBIDDEN,
   },
   WRONG_EMAIL: {
     code: 'WRONG_EMAIL',
-    message: 'User not found with the given email',
+    message: 'User with that email not found',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   WRONG_PASSWORD: {
     code: 'WRONG_PASSWORD',
-    message: 'Wrong password',
+    message: 'The password you entered is incorrect',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   OLD_PASSWORD_REQUIRED: {
@@ -59,7 +65,7 @@ export const ApiErrorMessage = {
   },
   WRONG_EMAIL_USERNAME: {
     code: 'WRONG_EMAIL_USERNAME',
-    message: 'User not found with the given email or username',
+    message: 'Incorrect email or username',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   USER_NOT_FOUND: {
@@ -69,54 +75,60 @@ export const ApiErrorMessage = {
   },
   USER_NOT_VERIFIED: {
     code: 'USER_NOT_VERIFIED',
-    message: 'User is not verified, please verify your email',
+    message: 'User is not verified',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   USER_REGISTERED_WITH_ANOTHER_METHOD: {
     code: 'USER_REGISTERED_WITH_ANOTHER_METHOD',
     message:
-      'User is already registered with another method. You can link this account in your profile',
+      'An account has already been registered with another method. You can link this account with another account on your profile page',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   USER_PASSWORD_NOT_SET: {
     code: 'USER_PASSWORD_NOT_SET',
     message:
-      'User registered with another method, please login with that method. Set password in your profile, if you want to login with password',
+      'The account is registered with another method, please set your password on your profile page',
     httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  USER_ALREADY_HAS_PROFILE: {
+    code: 'USER_ALREADY_HAS_PROFILE',
+    message:
+      'The account already has a profile. Use the edit profile feature to modify your profile',
+    httpCode: HttpStatus.CONFLICT,
   },
   USERNAME_EXISTS: {
     code: 'USERNAME_EXISTS',
-    message: 'Username already exists',
+    message: 'Username is already taken',
     httpCode: HttpStatus.CONFLICT,
   },
   USERNAME_SAME_AS_OLD: {
     code: 'USERNAME_SAME_AS_OLD',
-    message: 'New username is same as old username',
+    message: 'The new username is the same as the old username',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   EMAIL_EXISTS: {
     code: 'EMAIL_EXISTS',
-    message: 'Email already exists',
+    message: 'Email is already taken',
     httpCode: HttpStatus.CONFLICT,
   },
   EMAIL_NOT_SENT: {
     code: 'EMAIL_NOT_SENT',
-    message: 'Cannot send email',
+    message: 'Email not sent',
     httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
   },
   EMAIL_SAME_AS_OLD: {
     code: 'EMAIL_SAME_AS_OLD',
-    message: 'New email is same as old email',
+    message: 'The new email is the same as the old email',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   EMAIL_ALREADY_VERIFIED: {
     code: 'EMAIL_ALREADY_VERIFIED',
-    message: 'Email already verified',
+    message: 'Email is already verified',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   INVALID_OTP: {
     code: 'INVALID_OTP',
-    message: 'Invalid OTP',
+    message: 'The OTP you entered is incorrect',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   INVALID_OTP_TOKEN: {
@@ -126,12 +138,12 @@ export const ApiErrorMessage = {
   },
   VERIFY_OTP_FIRST: {
     code: 'VERIFY_OTP_FIRST',
-    message: 'Please verify your otp first',
+    message: 'Please verify the OTP first',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   REQ_OTP_FIRST: {
     code: 'REQ_OTP_FIRST',
-    message: 'Please request otp first',
+    message: 'Please request OTP first',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   RESEND_OTP_NOT_ALLOWED: {
@@ -172,12 +184,17 @@ export const ApiErrorMessage = {
   OAUTH_USER_ALREADY_REGISTERED: {
     code: 'USER_ALREADY_REGISTERED',
     message:
-      'User already registered with another method. You can link this account in your profile',
+      'User has already been registered with another method. You can link this account with another account on your profile page',
     httpCode: HttpStatus.CONFLICT,
   },
   OAUTH_SOCIAL_ACCOUNT_ALREADY_LINKED: {
     code: 'SOCIAL_ACCOUNT_ALREADY_LINKED',
-    message: 'Social account already linked',
+    message: 'Social account is already linked to another account',
     httpCode: HttpStatus.CONFLICT,
+  },
+  AVATAR_SIZE_DOES_NOT_MATCH: {
+    code: 'AVATAR_SIZE_DOES_NOT_MATCH',
+    message: 'Avatar size does not match',
+    httpCode: HttpStatus.BAD_REQUEST,
   },
 } as const satisfies Record<string, IApiErrorMessage>;
