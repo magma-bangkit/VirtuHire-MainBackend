@@ -33,17 +33,16 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package*.json ./
 COPY pnpm-lock.yaml ./
-COPY public ./public
 COPY views ./views
 
 # Install dependencies
 RUN pnpm install --prod --frozen-lockfile
 
 # Bundle app source
-COPY --from=build-stage /usr/src/app/dist .
+COPY --from=build-stage /usr/src/app/dist ./dist
 
 # Expose port
 EXPOSE 5050
 
 # Run app
-CMD [ "node", "main.js" ]
+CMD [ "node", "./dist/main.js" ]
