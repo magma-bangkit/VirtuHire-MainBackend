@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@casl/ability": "^5.4.4",
+    "@google-cloud/storage": "^6.11.0",
     "@googleapis/people": "^3.0.2",
     "@liaoliaots/nestjs-redis": "^9.0.5",
     "@liaoliaots/nestjs-redis-health": "^9.0.4",
