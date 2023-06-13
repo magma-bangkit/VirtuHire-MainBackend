@@ -5,9 +5,10 @@ import { ConfigName } from '@/common/constants/config-name.constant';
 import JoiEnvValidator, { JoiConfig } from '@/common/helpers/joi-env.utils';
 
 export interface IAppEnvConfig {
-  environment: 'development' | 'production';
+  environment: 'development' | 'production' | 'staging';
   isProduction: boolean;
   port: number;
+  serverUrl: string;
   swaggerEnabled: boolean;
   version: string;
 }
@@ -16,7 +17,9 @@ export default registerAs(ConfigName.APP, (): IAppEnvConfig => {
   const config: JoiConfig<IAppEnvConfig> = {
     environment: {
       value: process.env.NODE_ENV,
-      joi: Joi.string().valid('development', 'production').required(),
+      joi: Joi.string()
+        .valid('development', 'production', 'staging')
+        .required(),
     },
     isProduction: {
       value: process.env.NODE_ENV === 'production',
@@ -25,6 +28,10 @@ export default registerAs(ConfigName.APP, (): IAppEnvConfig => {
     port: {
       value: parseInt(process.env.PORT || '3000', 10),
       joi: Joi.number().required(),
+    },
+    serverUrl: {
+      value: process.env.SERVER_URL,
+      joi: Joi.string().required(),
     },
     swaggerEnabled: {
       value: process.env.SWAGGER_ENABLED === 'true',

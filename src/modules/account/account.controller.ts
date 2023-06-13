@@ -1,5 +1,20 @@
-import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  ParseFilePipeBuilder,
+  Post,
+  Put,
+  Req,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -17,11 +32,12 @@ import APIError from '@/common/exceptions/api-error.exception';
 import { User } from '@/entities/user.entity';
 
 import { AccountService } from './account.service';
+import { CreateProfileDTO } from './dto/create-profile.dto';
 import { RecoverPasswordDTO } from './dto/recover-password.dto';
 import { ResetForgotPasswordDTO } from './dto/reset-forgot-password.dto';
 import { UpdateEmailDTO } from './dto/update-email.dto';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
-import { UpdateUsernamelDTO } from './dto/update-username.dto';
+import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { VerifyEmailDTO } from './dto/verify-email.dto';
 import { VerifyResetPasswordOTPDTO } from './dto/verify-reset-password-otp.dto';
 
@@ -145,21 +161,8 @@ export class AccountController {
       'Check if user has been linked their password. This supposed to be called to determine change password flow.',
   })
   async checkLinkedPassword(@LoggedUser() user: User) {
-    const result = await this.accountService.checkLinkedPassword(user.id);
-
-    if (result.isErr()) {
-      const error = result.error;
-
-      switch (error.name) {
-        case 'USER_NOT_FOUND':
-          throw APIError.fromMessage(ApiErrorMessage.USER_NOT_FOUND);
-      }
-    }
-
-    const isLinked = result.value;
-
     return {
-      linked: isLinked,
+      linked: user.password !== null,
     };
   }
 
@@ -244,36 +247,6 @@ export class AccountController {
     return updatedUser.value;
   }
 
-  @Post('username')
-  @UseAuth()
-  @HttpCode(200)
-  @ApiOperation({ operationId: 'Update Username' })
-  @ApiOkResponse({ description: 'Updated User' })
-  async updateUsername(
-    @LoggedUser() user: User,
-    @Body() body: UpdateUsernamelDTO,
-  ) {
-    const updatedUser = await this.accountService.updateUsername(
-      user,
-      body.newUsername,
-    );
-
-    if (updatedUser.isErr()) {
-      const error = updatedUser.error;
-
-      switch (error.name) {
-        case 'USERNAME_EXISTS':
-          throw APIError.fromMessage(ApiErrorMessage.USERNAME_EXISTS);
-        case 'USERNAME_SAME_AS_OLD':
-          throw APIError.fromMessage(ApiErrorMessage.USERNAME_SAME_AS_OLD);
-      }
-
-      throw APIError.fromMessage(ApiErrorMessage.OPERATION_FAILED, error.cause);
-    }
-
-    return updatedUser.value;
-  }
-
   @Post('password')
   @UseAuth()
   @HttpCode(200)
@@ -284,7 +257,7 @@ export class AccountController {
     @Body() body: UpdatePasswordDTO,
   ) {
     const result = await this.accountService.updatePassword(
-      user.id,
+      user,
       body.newPassword,
       body.oldPassword,
     );
@@ -300,6 +273,134 @@ export class AccountController {
       }
 
       throw APIError.fromMessage(ApiErrorMessage.OPERATION_FAILED, error.cause);
+    }
+
+    return result.value;
+  }
+
+  @Post('profile')
+  @ApiOperation({
+    operationId: 'Create User Profile',
+    description:
+      'Create User Profile. This endpoint must be called after user registration. This use form-data to upload avatar. Avatar is optional. Avatar must be image type, maximum size is 5MB and size 320x320px. Resizing and Compressing must be done on client side.',
+  })
+  @ApiOkResponse({
+    description: 'User Profile Created',
+  })
+  @ApiConflictResponse({
+    description: 'User already has a profile',
+  })
+  @UseInterceptors(FileInterceptor('avatar'))
+  @UseAuth()
+  async createUserProfile(
+    @LoggedUser() user: User,
+    @Body() profile: CreateProfileDTO,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: new RegExp('image/(jpe?g|png)'),
+        })
+        .addMaxSizeValidator({ maxSize: 1024 * 1024 * 5 }) // 5MB
+        .build({
+          fileIsRequired: false,
+          errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+        }),
+    )
+    avatar?: Express.Multer.File,
+  ) {
+    const result = await this.accountService.createProfile(
+      user,
+      profile,
+      avatar,
+    );
+
+    if (result.isErr()) {
+      const e = result.error;
+      switch (e.name) {
+        case 'USER_ALREADY_HAS_PROFILE': {
+          throw APIError.fromMessage(ApiErrorMessage.USER_ALREADY_HAS_PROFILE);
+        }
+        case 'AVATAR_SIZE_NOT_MATCH': {
+          throw APIError.fromMessage(
+            ApiErrorMessage.AVATAR_SIZE_DOES_NOT_MATCH,
+          );
+        }
+        case 'FOREIGN_KEY_VIOLATION': {
+          throw new APIError(
+            {
+              message: e.message,
+              code: 'NOT_FOUND',
+            },
+            HttpStatus.NOT_FOUND,
+            e.cause,
+          );
+        }
+        default: {
+          throw APIError.fromMessage(
+            ApiErrorMessage.INTERNAL_SERVER_ERROR,
+            e.cause,
+          );
+        }
+      }
+    }
+
+    return result.value;
+  }
+
+  @Put('profile')
+  @ApiOperation({
+    operationId: 'Update User Profile',
+    description:
+      'Update User Profile. This endpoint only can be accessed after user fill their profile.',
+  })
+  @ApiOkResponse({
+    description: 'User Profile Updated',
+  })
+  @ApiForbiddenResponse({
+    description: 'User has no profile',
+  })
+  @UseInterceptors(FileInterceptor('avatar'))
+  @UseAuth()
+  async updateUserProfile(
+    @LoggedUser() user: User,
+    @Body() newProfile: UpdateProfileDTO,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: new RegExp('image/(jpe?g|png)'),
+        })
+        .addMaxSizeValidator({ maxSize: 1024 * 1024 * 5 }) // 5MB
+        .build({
+          fileIsRequired: false,
+          errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+        }),
+    )
+    avatar?: Express.Multer.File,
+  ) {
+    const result = await this.accountService.updateProfile(
+      user,
+      newProfile,
+      avatar,
+    );
+
+    if (result.isErr()) {
+      const e = result.error;
+      switch (e.name) {
+        case 'USER_HAS_NO_PROFILE': {
+          throw APIError.fromMessage(ApiErrorMessage.USER_HAS_NO_PROFILE);
+        }
+        case 'AVATAR_SIZE_NOT_MATCH': {
+          throw APIError.fromMessage(
+            ApiErrorMessage.AVATAR_SIZE_DOES_NOT_MATCH,
+          );
+        }
+        default: {
+          throw APIError.fromMessage(
+            ApiErrorMessage.INTERNAL_SERVER_ERROR,
+            e.cause,
+          );
+        }
+      }
     }
 
     return result.value;

@@ -7,6 +7,7 @@ import JoiEnvValidator, { JoiConfig } from '@/common/helpers/joi-env.utils';
 export interface IOAuthConfig {
   googleClientId: string;
   googleClientSecret: string;
+  googleCallbackUrl: string;
 }
 
 export default registerAs(ConfigName.OAUTH, (): IOAuthConfig => {
@@ -17,6 +18,10 @@ export default registerAs(ConfigName.OAUTH, (): IOAuthConfig => {
     },
     googleClientSecret: {
       value: process.env.GOOGLE_CLIENT_SECRET,
+      joi: Joi.string().required(),
+    },
+    googleCallbackUrl: {
+      value: process.env.GOOGLE_CALLBACK_URL,
       joi: Joi.string().required(),
     },
   };

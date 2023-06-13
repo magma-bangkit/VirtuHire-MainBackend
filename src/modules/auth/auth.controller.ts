@@ -6,7 +6,6 @@ import {
   Logger,
   Post,
   Req,
-  Res,
 } from '@nestjs/common';
 import {
   ApiConflictResponse,
@@ -16,15 +15,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 import { ApiErrorMessage } from '@/common/constants/api-error-message.constant';
-import { CookieName } from '@/common/constants/cookie-name.constant';
 import { UseAuth } from '@/common/decorators/use-auth.decorator';
 import APIError from '@/common/exceptions/api-error.exception';
 import { CookieUtils } from '@/common/helpers/cookie.utils';
 
 import { AuthService } from './auth.service';
+import { LogoutDTO } from './dto/logout.dto';
+import { RefreshTokenDTO } from './dto/refresh-token.dto';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
 
@@ -44,10 +44,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Wrong email or password',
   })
-  async login(
-    @Body() body: UserLoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async login(@Body() body: UserLoginDto) {
     const result = await this.authService.login(body);
 
     if (result.isErr()) {
@@ -70,17 +67,15 @@ export class AuthController {
 
     const loginData = result.value;
 
-    res.cookie(
-      CookieName.REFRESH_TOKEN,
-      loginData.refresh.token,
-      CookieUtils.getCookieSettings(loginData.refresh.expires),
-    );
-
     return {
       user: loginData.user,
       access: {
         token: loginData.access.token,
         expires: loginData.access.expires,
+      },
+      refresh: {
+        token: loginData.refresh.token,
+        expires: loginData.refresh.expires,
       },
     };
   }
@@ -93,18 +88,8 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'User is not logged in',
   })
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = CookieUtils.getRefreshTokenCookie(req);
-
-    if (!token) {
-      throw APIError.fromMessage(ApiErrorMessage.UNAUTHORIZED);
-    }
-
-    await this.authService.logout(token);
-
-    // clear cookies
-    res.clearCookie(CookieName.REFRESH_TOKEN);
-    req.session = null;
+  async logout(@Body() body: LogoutDTO) {
+    await this.authService.logout(body.refreshToken);
 
     return {
       message: 'Logout successful',
@@ -120,11 +105,7 @@ export class AuthController {
   @ApiConflictResponse({
     description: 'User already registered',
   })
-  async register(
-    @Body() body: UserRegisterDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async register(@Body() body: UserRegisterDto, @Req() req: Request) {
     const result = await this.authService.register(body, req.cookies.tz);
 
     if (result.isErr()) {
@@ -133,8 +114,6 @@ export class AuthController {
       switch (error.name) {
         case 'USER_EXISTS':
           throw APIError.fromMessage(ApiErrorMessage.USER_EMAIL_REGISTERED);
-        case 'USERNAME_EXISTS':
-          throw APIError.fromMessage(ApiErrorMessage.USERNAME_EXISTS);
       }
 
       this.logger.error(error);
@@ -148,18 +127,15 @@ export class AuthController {
     // Unpack result
     const registerData = result.value;
 
-    // set refresh token cookie
-    res.cookie(
-      CookieName.REFRESH_TOKEN,
-      registerData.refresh.token,
-      CookieUtils.getCookieSettings(registerData.refresh.expires),
-    );
-
     return {
       user: registerData.user,
       access: {
         token: registerData.access.token,
         expires: registerData.access.expires,
+      },
+      refresh: {
+        token: registerData.refresh.token,
+        expires: registerData.refresh.expires,
       },
     };
   }
@@ -172,14 +148,8 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'User is not logged in',
   })
-  async refresh(@Req() req: Request) {
-    const token = CookieUtils.getRefreshTokenCookie(req);
-
-    if (!token) {
-      throw APIError.fromMessage(ApiErrorMessage.UNAUTHORIZED);
-    }
-
-    const result = await this.authService.refresh(token);
+  async refresh(@Body() body: RefreshTokenDTO) {
+    const result = await this.authService.refresh(body.refreshToken);
 
     if (result.isErr()) {
       const error = result.error;
@@ -212,19 +182,8 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Return success message and clear refresh token cookie',
   })
-  async logoutDevices(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const token = CookieUtils.getRefreshTokenCookie(req);
-
-    if (!token) {
-      throw APIError.fromMessage(ApiErrorMessage.UNAUTHORIZED);
-    }
-
-    await this.authService.logout(token, true);
-
-    res.clearCookie(CookieName.REFRESH_TOKEN);
+  async logoutDevices(@Body() body: LogoutDTO) {
+    await this.authService.logout(body.refreshToken, true);
 
     return {
       message: 'Logout successful',

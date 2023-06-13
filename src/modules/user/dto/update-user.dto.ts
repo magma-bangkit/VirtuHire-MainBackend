@@ -8,26 +8,29 @@ import {
   MinLength,
 } from 'class-validator';
 
-import { IsUsername } from '@/common/validators/is-username.validator';
 import { UserRole } from '@/entities/user.entity';
 
 export class UpdateUserDto {
-  @ApiPropertyOptional({ minimum: 5, maximum: 12 })
+  @ApiPropertyOptional()
   @Transform(({ value }) => (value as string).toLowerCase().trim())
-  @IsUsername()
   @IsOptional()
-  readonly username?: string;
+  readonly firstName?: string;
+
+  @ApiPropertyOptional()
+  @Transform(({ value }) => (value as string).toLowerCase().trim())
+  @IsOptional()
+  readonly lastName?: string;
 
   @ApiPropertyOptional()
   @IsEmail()
-  @IsOptional()
   @Transform(({ value }) => (value as string).toLowerCase().trim())
+  @IsOptional()
   readonly email?: string;
 
   @ApiPropertyOptional({ minimum: 6, maximum: 128 })
   @MinLength(6)
-  @IsOptional()
   @MaxLength(128)
+  @IsOptional()
   readonly password?: string;
 
   @ApiPropertyOptional({ enum: UserRole })

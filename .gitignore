@@ -31,3 +31,5 @@ lerna-debug.log*
 # Environtment Variables
 .env
 .env.development
+
+.docker/data

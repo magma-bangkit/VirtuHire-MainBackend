@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Column, Entity, ManyToOne } from 'typeorm';
 
 import { DefaultEntity } from './default.entity';
@@ -13,5 +12,5 @@ export class RefreshToken extends DefaultEntity {
   isRevoked: boolean;
 
   @Column()
-  expiredOn!: Date;
+  expiredOn: Date;
 }

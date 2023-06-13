@@ -8,5 +8,6 @@ export const ConfigName = {
   SENTRY: 'sentry-config',
   REDIS: 'redis-config',
   OAUTH: 'oauth-config',
-  AWSS3: 'aws-s3-config',
+  OPENAI: 'openai-config',
+  CLOUDSTORAGE: 'cloud-storage-config',
 } as const;

@@ -5,12 +5,32 @@ import { JwtAuthGuard } from '../guards/jwt.guard';
 
 export const UseAuth = ({
   ignoreVerified = true,
+  profileFilled = false,
 }: {
   ignoreVerified?: boolean;
+  profileFilled?: boolean;
 } = {}) => {
-  return applyDecorators(
-    UseGuards(JwtAuthGuard(ignoreVerified)),
+  const decorators = [
+    UseGuards(JwtAuthGuard(ignoreVerified, profileFilled)),
     ApiBearerAuth('Access Token'),
     ApiUnauthorizedResponse({ description: 'User is not logged in' }),
-  );
+  ];
+
+  if (profileFilled) {
+    decorators.push(
+      ApiUnauthorizedResponse({
+        description: 'User profile is not filled',
+      }),
+    );
+  }
+
+  if (!ignoreVerified) {
+    decorators.push(
+      ApiUnauthorizedResponse({
+        description: 'User is not verified',
+      }),
+    );
+  }
+
+  return applyDecorators(...decorators);
 };

@@ -21,9 +21,10 @@ import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 import { ApiErrorMessage } from '@/common/constants/api-error-message.constant';
+import { CheckRoles } from '@/common/decorators/check-roles.decorator';
 import { UseAuth } from '@/common/decorators/use-auth.decorator';
 import APIError from '@/common/exceptions/api-error.exception';
-import { User } from '@/entities/user.entity';
+import { User, UserRole } from '@/entities/user.entity';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -38,6 +39,7 @@ export class AdminUserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @CheckRoles(UserRole.ADMIN)
   @UseAuth()
   @ApiOperation({
     operationId: 'Get All Users',
@@ -51,6 +53,7 @@ export class AdminUserController {
   }
 
   @Get(':id')
+  @CheckRoles(UserRole.ADMIN)
   @UseAuth()
   @ApiOperation({ operationId: 'Get User by id' })
   @ApiOkResponse({ description: 'Return user data', type: User })
@@ -66,6 +69,7 @@ export class AdminUserController {
   }
 
   @Post()
+  @CheckRoles(UserRole.ADMIN)
   @UseAuth()
   @ApiOperation({ operationId: 'Create User' })
   @ApiOkResponse({
@@ -83,8 +87,6 @@ export class AdminUserController {
 
       if (error.name === 'EXISTS') {
         switch (error.message) {
-          case 'username':
-            throw APIError.fromMessage(ApiErrorMessage.USERNAME_EXISTS);
           case 'email':
             throw APIError.fromMessage(ApiErrorMessage.USER_EMAIL_REGISTERED);
         }
@@ -100,6 +102,7 @@ export class AdminUserController {
   }
 
   @Put(':id')
+  @CheckRoles(UserRole.ADMIN)
   @UseAuth()
   @ApiOperation({ operationId: 'Update User by id' })
   @ApiOkResponse({ description: 'Return updated user data', type: User })
@@ -117,8 +120,6 @@ export class AdminUserController {
 
       if (error.name === 'EXISTS') {
         switch (error.message) {
-          case 'username':
-            throw APIError.fromMessage(ApiErrorMessage.USERNAME_EXISTS);
           case 'email':
             throw APIError.fromMessage(ApiErrorMessage.USER_EMAIL_REGISTERED);
         }
@@ -136,6 +137,7 @@ export class AdminUserController {
   }
 
   @Delete(':id')
+  @CheckRoles(UserRole.ADMIN)
   @UseAuth()
   @ApiOperation({ operationId: 'Delete User by id' })
   @ApiNoContentResponse({

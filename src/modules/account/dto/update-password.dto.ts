@@ -10,5 +10,5 @@ export class UpdatePasswordDTO {
   @MinLength(6)
   @MaxLength(128)
   @IsNotEmpty()
-  readonly newPassword!: string;
+  readonly newPassword: string;
 }

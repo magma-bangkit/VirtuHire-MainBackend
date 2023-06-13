@@ -37,16 +37,9 @@ export class AuthService {
   }
 
   public async login(data: UserLoginDto) {
-    const isEmail = Joi.string()
-      .email()
-      .required()
-      .validate(data.emailOrUsername);
-
-    const query = isEmail.error
-      ? { username: data.emailOrUsername }
-      : { email: data.emailOrUsername };
-
-    const user = await this.userService.findOne(query);
+    const user = await this.userService.findOne({
+      email: data.email,
+    });
 
     if (!user) {
       return err(new ServiceException('USER_NOT_FOUND'));
@@ -101,8 +94,6 @@ export class AuthService {
         switch (error.message) {
           case 'email':
             return err(new ServiceException('USER_EXISTS'));
-          case 'username':
-            return err(new ServiceException('USERNAME_EXISTS'));
         }
       }
 
@@ -119,9 +110,9 @@ export class AuthService {
     });
 
     await this.emailProducerService.sendVerificationEmail({
+      name: user.firstName,
       code: code,
       email: user.email,
-      username: user.username,
       expireDate: DateUtils.formatTimezone(expiredOn, userTimezone),
     });
 
@@ -160,9 +151,9 @@ export class AuthService {
       }
     }
 
-    const decode = await this.jwtRepo.decode(token);
+    const decode = this.jwtRepo.decode(token);
 
-    const user = await this.userService.findOne({ id: decode.id });
+    const user = await this.userService.findOne({ id: decode.sub });
 
     if (!user) {
       return err(new ServiceException('USER_NOT_FOUND'));
@@ -195,14 +186,14 @@ export class AuthService {
         return err(new ServiceException('USER_ALREADY_REGISTERED'));
       }
 
-      // Generate random username with pattern email + random 3 digits
-      const username = `${data.email.split('@')[0]}${Math.floor(
+      // Generate random name with pattern email + random 3 digits
+      const name = `${data.email.split('@')[0]}${Math.floor(
         Math.random() * 1000,
       )}`;
 
       const createdUser = await this.userService.create({
+        firstName: name,
         email: data.email,
-        username,
         signUpMethod: provider,
       });
 

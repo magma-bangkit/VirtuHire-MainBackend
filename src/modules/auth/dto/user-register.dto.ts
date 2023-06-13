@@ -1,35 +1,52 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 import { IsMatch } from '@/common/validators/is-match.decorator';
-import { IsUsername } from '@/common/validators/is-username.validator';
+import { IsTrue } from '@/common/validators/is-true.decorator';
 
 export class UserRegisterDto {
-  @ApiProperty({ minimum: 5, maximum: 12 })
-  @Transform(({ value }) => (value as string).toLowerCase().trim())
-  @IsUsername()
+  @ApiProperty()
+  @Transform(({ value }) => (value as string).trim())
   @IsNotEmpty()
-  readonly username!: string;
+  readonly firstName: string;
+
+  @ApiPropertyOptional()
+  @Transform(({ value }) => (value as string).trim())
+  @IsOptional()
+  readonly lastName?: string;
 
   @ApiProperty()
   @IsEmail()
   @Transform(({ value }) => (value as string).toLowerCase().trim())
   @IsNotEmpty()
-  readonly email!: string;
+  readonly email: string;
 
   @ApiProperty({ minimum: 6, maximum: 128 })
   @MinLength(6)
   @MaxLength(128)
   @IsNotEmpty()
-  readonly password!: string;
+  readonly password: string;
 
   @ApiProperty({ minimum: 6, maximum: 128 })
   @IsMatch('password', {
-    message: 'Password confirmation does not match password',
+    message: 'Password confirmation is not match with password',
   })
   @MinLength(6)
   @MaxLength(128)
-  @IsNotEmpty({ message: 'Password confirmation is required' })
-  readonly passwordConfirmation!: string;
+  @IsNotEmpty({ message: 'Confirm password is required' })
+  readonly passwordConfirmation: string;
+
+  @ApiProperty()
+  @IsNotEmpty({ message: 'You must agree to the terms and conditions' })
+  @IsTrue({ message: 'You must agree to the terms and conditions' })
+  @IsBoolean()
+  readonly termsAndConditions: boolean;
 }

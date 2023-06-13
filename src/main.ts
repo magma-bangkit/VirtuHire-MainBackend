@@ -3,16 +3,16 @@ import { Logger as AppLogger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
-import * as dayjs from 'dayjs';
-import * as advanced from 'dayjs/plugin/advancedFormat';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as utc from 'dayjs/plugin/utc';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import dayjs from 'dayjs';
+import advanced from 'dayjs/plugin/advancedFormat';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import helmet from 'helmet';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
-import * as path from 'path';
-import * as responseTime from 'response-time';
+import path from 'path';
+import responseTime from 'response-time';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 
 import { AppModule } from '@/app.module';
@@ -31,8 +31,11 @@ async function bootstrap() {
   dayjs.extend(utc);
   dayjs.extend(advanced);
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: true,
+    snapshot: true,
   });
 
   const configService = app.get(ConfigService);
@@ -44,6 +47,8 @@ async function bootstrap() {
   app.useStaticAssets(path.join(__dirname, '..', 'public'), {
     prefix: '/static/',
   });
+  app.setBaseViewsDir(path.join(__dirname, '..', 'views'));
+  app.setViewEngine('hbs');
 
   // use pino logger
   app.useLogger(app.get(Logger));

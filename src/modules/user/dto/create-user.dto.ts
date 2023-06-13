@@ -9,27 +9,30 @@ import {
   MinLength,
 } from 'class-validator';
 
-import { IsUsername } from '@/common/validators/is-username.validator';
 import { UserRole } from '@/entities/user.entity';
 
 export class CreateUserDto {
-  @ApiProperty({ minimum: 5, maximum: 12 })
+  @ApiProperty()
   @Transform(({ value }) => (value as string).toLowerCase().trim())
-  @IsUsername()
   @IsNotEmpty()
-  readonly username!: string;
+  readonly firstName: string;
+
+  @ApiPropertyOptional()
+  @Transform(({ value }) => (value as string).toLowerCase().trim())
+  @IsOptional()
+  readonly lastName?: string;
 
   @ApiProperty()
   @IsEmail()
   @Transform(({ value }) => (value as string).toLowerCase().trim())
   @IsNotEmpty()
-  readonly email!: string;
+  readonly email: string;
 
   @ApiProperty({ minimum: 6, maximum: 128 })
   @MinLength(6)
   @MaxLength(128)
   @IsNotEmpty()
-  readonly password!: string;
+  readonly password: string;
 
   @ApiPropertyOptional({ enum: UserRole })
   @IsOptional()

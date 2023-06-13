@@ -36,7 +36,7 @@ export class GoogleOauthService {
     this.OAuthClient = new OAuth2Client({
       clientId: this.OAuthConfig?.googleClientId,
       clientSecret: this.OAuthConfig?.googleClientSecret,
-      redirectUri: 'http://127.0.0.1/v1/auth/oauth/google/callback',
+      redirectUri: this.OAuthConfig?.googleCallbackUrl,
     });
   }
 

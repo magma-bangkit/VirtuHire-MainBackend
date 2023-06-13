@@ -28,13 +28,7 @@ import { ISMTPConfig } from '@/lib/config/configs/smtp.config';
             from: `"${emailConfig?.fromName}" <${emailConfig?.from}>`,
           },
           template: {
-            dir: path.join(
-              process.cwd(),
-              'src',
-              'modules',
-              'email',
-              'templates',
-            ),
+            dir: path.join(process.cwd(), 'views'),
             adapter: new HandlebarsAdapter(),
             options: {
               strict: true,

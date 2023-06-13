@@ -30,7 +30,7 @@ export abstract class DefaultEntity extends BaseEntity {
   })
   @DeleteDateColumn()
   @ApiProperty()
-  deletedAt?: Date | null;
+  deletedAt?: Date;
 
   @Column()
   @VersionColumn()

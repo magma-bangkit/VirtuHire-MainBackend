@@ -4,5 +4,5 @@ import { IsNotEmpty } from 'class-validator';
 export class VerifyEmailDTO {
   @ApiProperty()
   @IsNotEmpty()
-  readonly otp!: string;
+  readonly otp: string;
 }

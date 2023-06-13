@@ -13,9 +13,9 @@ export class EmailProducerService {
   constructor(@InjectQueue('sendMail') private queue: Queue) {}
 
   public async sendVerificationEmail(data: {
+    name: string;
     email: string;
     code: string;
-    username: string;
     expireDate: string;
   }) {
     try {
@@ -24,8 +24,8 @@ export class EmailProducerService {
         subject: 'Confirm your email',
         template: EmailTemplate.VERIFICATION_EMAIL,
         context: {
+          name: data.name,
           code: data.code,
-          name: data.username,
           expire: data.expireDate,
         },
       });
@@ -39,6 +39,7 @@ export class EmailProducerService {
   }
 
   public async sendResetPasswordEmail(data: {
+    name: string;
     email: string;
     code: string;
     expireDate: string;
@@ -50,7 +51,7 @@ export class EmailProducerService {
         template: EmailTemplate.RESET_PASSWORD_EMAIL,
         context: {
           code: data.code,
-          email: data.email,
+          name: data.name,
           expire: data.expireDate,
         },
       });

@@ -197,4 +197,9 @@ export const ApiErrorMessage = {
     message: 'Avatar size does not match',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  JOB_OPENING_NOT_FOUND: {
+    code: 'JOB_OPENING_NOT_FOUND',
+    message: 'Job opening not found',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
 } as const satisfies Record<string, IApiErrorMessage>;

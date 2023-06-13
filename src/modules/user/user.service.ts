@@ -14,7 +14,7 @@ export class UserService extends CRUDService<User> {
     const paginationConfig: PaginateConfig<User> = {
       sortableColumns: ['id', 'email', 'role', 'createdAt', 'updatedAt'],
       nullSort: 'last',
-      searchableColumns: ['email', 'username'],
+      searchableColumns: ['email'],
       defaultLimit: 10,
       defaultSortBy: [['id', 'ASC']],
     };
