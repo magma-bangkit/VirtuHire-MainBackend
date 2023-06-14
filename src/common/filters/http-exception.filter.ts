@@ -4,7 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
 } from '@nestjs/common';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { Response } from 'express';
 
 import APIError, { IAPIError } from '../exceptions/api-error.exception';

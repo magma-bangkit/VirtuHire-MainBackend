@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 import { ConfigName } from '@/common/constants/config-name.constant';
 import { IJWTConfig } from '@/lib/config/configs/jwt.config';

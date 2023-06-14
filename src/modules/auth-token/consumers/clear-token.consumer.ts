@@ -7,9 +7,9 @@ import {
 } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as Sentry from '@sentry/node';
+import Sentry from '@sentry/node';
 import { Job } from 'bull';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { LessThan, Repository } from 'typeorm';
 
 import { RefreshToken } from '@/entities/resfresh-token.entity';

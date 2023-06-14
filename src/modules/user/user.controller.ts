@@ -20,27 +20,6 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Head('username/:username')
-  @ApiOperation({ operationId: 'Check Username Availability' })
-  @ApiOkResponse({
-    description: 'Username available',
-  })
-  @ApiConflictResponse({
-    description: 'Username already taken',
-  })
-  async checkUsernameAvailability(
-    @Param('username') username: string,
-    @Res() res: Response,
-  ) {
-    const result = await this.userService.findOne({ username });
-
-    if (result) {
-      throw APIError.fromMessage(ApiErrorMessage.USERNAME_EXISTS);
-    }
-
-    res.sendStatus(HttpStatus.OK);
-  }
-
   @Head('email/:email')
   @ApiOperation({ operationId: 'Check Email Availability' })
   @ApiOkResponse({

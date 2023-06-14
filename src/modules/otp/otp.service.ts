@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { PaginateConfig } from 'nestjs-paginate';
-import * as otpGenerator from 'otp-generator';
+import otpGenerator from 'otp-generator';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 
 import { CRUDService } from '@/common/classes/base-crud.service';
@@ -42,7 +42,7 @@ export class OTPService extends CRUDService<OTP> {
     userId,
     type,
     ttl = 300,
-    length = 6,
+    length = 4,
   }: {
     userId?: string;
     type: OTPType;

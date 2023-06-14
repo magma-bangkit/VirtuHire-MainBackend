@@ -197,4 +197,35 @@ export const ApiErrorMessage = {
     message: 'Avatar size does not match',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  JOB_OPENING_NOT_FOUND: {
+    code: 'JOB_OPENING_NOT_FOUND',
+    message: 'Job opening not found',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  INTERVIEWER_GOT_FEVER: {
+    code: 'INTERVIEWER_GOT_FEVER',
+    message:
+      'Unfortunately, the interviewer got a fever. Please try again later',
+    httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+  },
+  INTERVIEW_ALREADY_DONE: {
+    code: 'INTERVIEW_ALREADY_DONE',
+    message: 'Interview has already been done',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  INTERVIEW_MESSAGGE_NOT_ALLOWED: {
+    code: 'INTERVIEW_MESSAGGE_NOT_ALLOWED',
+    message: 'Interview message is not allowed',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  INTERVIEW_HISTORY_NOT_FOUND: {
+    code: 'INTERVIEW_HISTORY_NOT_FOUND',
+    message: 'Interview history not found',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  INTERVIEW_SESSION_NOT_FOUND: {
+    code: 'INTERVIEW_SESSION_NOT_FOUND',
+    message: 'Interview session not found',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
 } as const satisfies Record<string, IApiErrorMessage>;

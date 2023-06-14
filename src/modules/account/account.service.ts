@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import * as dayjs from 'dayjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import bufferSize from 'buffer-image-size';
+import dayjs from 'dayjs';
+import { ForeignKeyViolationError, wrapError } from 'db-errors';
+import { omit } from 'lodash';
 import { err, ok } from 'neverthrow';
+import sharp from 'sharp';
+import { Repository, TypeORMError } from 'typeorm';
 
 import { ServiceException } from '@/common/exceptions/service.exception';
 import { DateUtils } from '@/common/helpers/date.utils';
 import { HashUtils } from '@/common/helpers/hash.utils';
 import { OTPType } from '@/entities/otp.entity';
+import { Profile } from '@/entities/profile.entity';
 import { User } from '@/entities/user.entity';
 
+import { CreateProfileDTO } from './dto/create-profile.dto';
+import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { VerifyResetPasswordOTPDTO } from './dto/verify-reset-password-otp.dto';
 import { EmailProducerService } from '../email/producers/email.producer.service';
+import { GoogleStorageService } from '../google-storage/google-storage.service';
 import { JWTRepository } from '../jwt/jwt.repository';
 import { OTPService } from '../otp/otp.service';
 import { UserService } from '../user/user.service';
@@ -21,6 +31,9 @@ export class AccountService {
     private readonly emailService: EmailProducerService,
     private readonly otpService: OTPService,
     private readonly jwtRepo: JWTRepository,
+    @InjectRepository(Profile)
+    private readonly profileRepo: Repository<Profile>,
+    private readonly googleStorageService: GoogleStorageService,
   ) {}
 
   private readonly ALLOW_RESEND_OTP_IN = 30;
@@ -61,6 +74,7 @@ export class AccountService {
 
     // Send Email
     await this.emailService.sendResetPasswordEmail({
+      name: user.firstName,
       email: user.email,
       code: createdOTP.otp.code,
       expireDate: DateUtils.formatTimezone(
@@ -155,10 +169,7 @@ export class AccountService {
     return ok(true);
   }
 
-  public async sendEmailVerification(
-    user: Pick<User, 'id' | 'email' | 'username' | 'isEmailVerified'>,
-    userTimezone?: string,
-  ) {
+  public async sendEmailVerification(user: User, userTimezone?: string) {
     if (user.isEmailVerified) {
       return err(new ServiceException('EMAIL_ALREADY_VERIFIED'));
     }
@@ -191,8 +202,8 @@ export class AccountService {
     });
 
     await this.emailService.sendVerificationEmail({
+      name: user.firstName,
       email: user.email,
-      username: user.username,
       code: createdOTP.otp.code,
       expireDate: DateUtils.formatTimezone(
         createdOTP.otp.expiredOn,
@@ -241,14 +252,8 @@ export class AccountService {
     return ok(verifiedUser.value);
   }
 
-  public async updateEmail(user: Pick<User, 'email' | 'id'>, newEmail: string) {
-    const userResult = await this.userService.findOne({ id: user.id });
-
-    if (!userResult) {
-      return err(new ServiceException('USER_NOT_FOUND'));
-    }
-
-    if (userResult.email === newEmail) {
+  public async updateEmail(user: User, newEmail: string) {
+    if (user.email === newEmail) {
       return err(new ServiceException('EMAIL_SAME'));
     }
 
@@ -273,44 +278,11 @@ export class AccountService {
     return ok(updatedUser.value);
   }
 
-  public async updateUsername(
-    user: Pick<User, 'id' | 'username'>,
-    username: string,
-  ) {
-    const userResult = await this.userService.findOne({ id: user.id });
-
-    if (!userResult) {
-      return err(new ServiceException('USER_NOT_FOUND'));
-    }
-
-    if (userResult.username === username) {
-      return err(new ServiceException('USERNAME_SAME_AS_OLD'));
-    }
-
-    const updatedUser = await this.userService.update(user.id, {
-      username,
-    });
-
-    if (updatedUser.isErr()) {
-      const error = updatedUser.error;
-
-      if (error.name === 'EXISTS') {
-        return err(new ServiceException('USERNAME_EXISTS'));
-      }
-
-      return err(new ServiceException('UPDATE_USERNAME_FAILED', error.cause));
-    }
-
-    return ok(updatedUser.value);
-  }
-
   public async updatePassword(
-    userId: string,
+    user: User,
     newPassword: string,
     oldPassword?: string,
   ) {
-    const user = await this.userService.findOne({ id: userId });
-
     if (!user) {
       return err(new ServiceException('USER_NOT_FOUND'));
     }
@@ -352,5 +324,189 @@ export class AccountService {
     }
 
     return ok(user.password !== null);
+  }
+
+  public async createProfile(
+    user: User,
+    profile: CreateProfileDTO,
+    avatar?: Express.Multer.File,
+  ) {
+    if (user.profile) {
+      return err(new ServiceException('USER_ALREADY_HAS_PROFILE'));
+    }
+
+    let avatarData;
+    if (avatar) {
+      const avatarDim = bufferSize(avatar.buffer);
+
+      if (avatarDim.width !== 320 || avatarDim.height !== 320) {
+        return err(new ServiceException('AVATAR_SIZE_NOT_MATCH'));
+      }
+
+      const avatarThumbnail = await sharp(avatar.buffer)
+        .resize(161, 161)
+        .toBuffer();
+
+      const avatarUpload = await this.googleStorageService.uploadProfilePicture(
+        avatar.buffer,
+        user.id,
+        320,
+      );
+
+      const thumbnailUpload =
+        await this.googleStorageService.uploadProfilePicture(
+          avatarThumbnail,
+          user.id,
+          161,
+        );
+
+      if (avatarUpload.isErr() || thumbnailUpload.isErr()) {
+        return err(new ServiceException('UPLOAD_PROFILE_PICTURE_FAILED'));
+      }
+
+      avatarData = {
+        avatar: avatarUpload.value.fileName,
+        avatarThumbnail: thumbnailUpload.value.fileName,
+      };
+    }
+
+    try {
+      const newProfile = this.profileRepo.create({
+        birthday: profile.birthday,
+        education: {
+          degree: {
+            id: profile.degreeId,
+          },
+          major: {
+            id: profile.majorId,
+          },
+          institution: {
+            id: profile.institutionId,
+          },
+          startDate: profile.educationStartDate,
+          endDate: profile.educationEndDate,
+        },
+        city: {
+          id: profile.cityId,
+        },
+        skills: profile.skills.map((skill) => ({
+          id: skill,
+        })),
+        preferredCities: profile.preferredCities.map((city) => ({
+          id: city,
+        })),
+        expectedSalary: profile.expectedSalary,
+        preferredJobTypes: profile.preferredJobTypes,
+        preferredJobCategories: profile.preferredJobCategories.map(
+          (category) => ({
+            id: category,
+          }),
+        ),
+        ...avatarData,
+      });
+
+      user.profile = newProfile;
+
+      const updatedUser = await user.save();
+
+      return ok(omit(updatedUser, ['password']));
+    } catch (error) {
+      if (error instanceof TypeORMError) {
+        const e = wrapError(error);
+
+        if (e instanceof ForeignKeyViolationError) {
+          return err(
+            new ServiceException(
+              'FOREIGN_KEY_VIOLATION',
+              e,
+              (e.nativeError as any).detail,
+            ),
+          );
+        }
+      }
+
+      return err(new ServiceException('CREATE_PROFILE_FAILED', error));
+    }
+  }
+
+  public async updateProfile(
+    user: User,
+    newProfile: UpdateProfileDTO,
+    avatar?: Express.Multer.File,
+  ) {
+    if (!user.profile) {
+      return err(new ServiceException('USER_HAS_NO_PROFILE'));
+    }
+
+    let avatarData;
+    if (avatar) {
+      const avatarDim = bufferSize(avatar.buffer);
+
+      if (avatarDim.width !== 320 || avatarDim.height !== 320) {
+        return err(new ServiceException('AVATAR_SIZE_NOT_MATCH'));
+      }
+
+      const avatarThumbnail = await sharp(avatar.buffer)
+        .resize(161, 161)
+        .toBuffer();
+
+      const avatarUpload = await this.googleStorageService.uploadProfilePicture(
+        avatar.buffer,
+        user.id,
+        320,
+      );
+
+      const thumbnailUpload =
+        await this.googleStorageService.uploadProfilePicture(
+          avatarThumbnail,
+          user.id,
+          161,
+        );
+
+      if (avatarUpload.isErr() || thumbnailUpload.isErr()) {
+        return err(new ServiceException('UPLOAD_PROFILE_PICTURE_FAILED'));
+      }
+
+      avatarData = {
+        avatar: avatarUpload.value.fileName,
+        avatarThumbnail: thumbnailUpload.value.fileName,
+      };
+    }
+
+    const updatedProfile = await this.profileRepo.save({
+      ...user.profile,
+      birthday: newProfile.birthday,
+      education: {
+        degree: {
+          id: newProfile.degreeId,
+        },
+        major: {
+          id: newProfile.majorId,
+        },
+        institution: {
+          id: newProfile.institutionId,
+        },
+        startDate: newProfile.educationStartDate,
+        endDate: newProfile.educationEndDate,
+      },
+      city: {
+        id: newProfile.cityId,
+      },
+      preferredCities: newProfile.preferredCities
+        ? newProfile.preferredCities.map((city) => ({
+            id: city,
+          }))
+        : undefined,
+      expectedSalary: newProfile.expectedSalary,
+      preferredJobTypes: newProfile.preferredJobTypes,
+      preferredJobCategories: newProfile.preferredJobCategories
+        ? newProfile.preferredJobCategories.map((category) => ({
+            id: category,
+          }))
+        : undefined,
+      ...avatarData,
+    });
+
+    return ok(updatedProfile);
   }
 }

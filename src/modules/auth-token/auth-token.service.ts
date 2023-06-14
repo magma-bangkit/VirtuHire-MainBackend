@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { TokenExpiredError } from 'jsonwebtoken';
 import { pick } from 'lodash';
 import { err, ok } from 'neverthrow';

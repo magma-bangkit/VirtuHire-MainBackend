@@ -6,13 +6,13 @@ import { IsMatch } from '@/common/validators/is-match.decorator';
 export class ResetForgotPasswordDTO {
   @ApiProperty()
   @IsNotEmpty()
-  readonly token!: string;
+  readonly token: string;
 
   @ApiProperty({ minimum: 6, maximum: 128 })
   @MinLength(6)
   @MaxLength(128)
   @IsNotEmpty()
-  readonly password!: string;
+  readonly password: string;
 
   @ApiProperty({ minimum: 6, maximum: 128 })
   @IsMatch('password', {
@@ -21,5 +21,5 @@ export class ResetForgotPasswordDTO {
   @MinLength(6)
   @MaxLength(128)
   @IsNotEmpty({ message: 'Password confirmation is required' })
-  readonly passwordConfirmation!: string;
+  readonly passwordConfirmation: string;
 }

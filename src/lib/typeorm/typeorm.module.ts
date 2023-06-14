@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as path from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 
 import { ConfigName } from '@/common/constants/config-name.constant';
@@ -26,6 +27,8 @@ import { IDatabaseConfig } from '@/lib/config/configs/db.config';
           ],
           migrations: [path.join(__dirname, '..', '..', 'migrations', '*')],
           synchronize: appConfig?.environment !== 'production',
+          // synchronize: false,
+          namingStrategy: new SnakeNamingStrategy(),
         };
       },
       dataSourceFactory: async (options: DataSourceOptions) => {

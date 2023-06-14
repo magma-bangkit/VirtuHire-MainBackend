@@ -7,5 +7,5 @@ export class RecoverPasswordDTO {
   @Transform(({ value }) => (value as string).toLowerCase().trim())
   @IsEmail()
   @IsNotEmpty()
-  readonly email!: string;
+  readonly email: string;
 }

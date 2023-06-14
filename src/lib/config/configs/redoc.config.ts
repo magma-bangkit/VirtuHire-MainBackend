@@ -1,10 +1,10 @@
 import { RedocOptions } from 'nestjs-redoc';
 
 export const redocOptions: RedocOptions = {
-  title: 'NestJS Starter Docs',
+  title: 'VirtuHire Documentation',
   logo: {
     backgroundColor: '#F0F0F0',
-    altText: 'NestJS Starter',
+    altText: 'VirtuHire Logo',
   },
   sortPropsAlphabetically: true,
   hideDownloadButton: false,
