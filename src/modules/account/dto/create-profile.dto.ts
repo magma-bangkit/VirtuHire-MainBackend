@@ -14,26 +14,26 @@ export class CreateProfileDTO {
   @ApiProperty()
   @MaxDate(new Date(), { message: 'Birthday must be less than today' })
   @Transform(({ value }) => new Date(value))
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Birthday is required' })
   readonly birthday: Date;
 
   @ApiProperty({
     description: 'Degree in ID',
   })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Degree ID is required' })
   readonly degreeId: number;
 
   @ApiProperty()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Institution ID is required' })
   readonly institutionId: number;
 
   @ApiProperty()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Major ID is required' })
   readonly majorId: number;
 
   @ApiProperty()
   @Transform(({ value }) => new Date(value))
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Education start date is required' })
   readonly educationStartDate: Date;
 
   @ApiPropertyOptional({
@@ -49,24 +49,24 @@ export class CreateProfileDTO {
     type: [Number],
   })
   @IsNumber({}, { each: true })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Skills are required' })
   readonly skills: number[];
 
   @ApiProperty()
   @IsNumber()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'City ID is required' })
   readonly cityId: number;
 
   @ApiProperty({ enum: JobType, isArray: true })
   @IsEnum(JobType, { each: true })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Preferred job types are required' })
   readonly preferredJobTypes: JobType[];
 
   @ApiProperty({
     description: 'Expected Salary per month in IDR',
   })
   @IsNumber()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Expected salary is required' })
   readonly expectedSalary: number;
 
   @ApiProperty({
@@ -74,7 +74,7 @@ export class CreateProfileDTO {
     type: [Number],
   })
   @IsNumber({}, { each: true })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Preferred cities are required' })
   readonly preferredCities: number[];
 
   @ApiProperty({
@@ -82,6 +82,6 @@ export class CreateProfileDTO {
     type: [Number],
   })
   @IsNumber({}, { each: true })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Preferred job categories are required' })
   readonly preferredJobCategories: number[];
 }
