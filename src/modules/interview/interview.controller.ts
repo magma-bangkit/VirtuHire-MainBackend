@@ -18,7 +18,7 @@ import { InterviewService } from './interview.service';
   path: 'interview',
   version: '1',
 })
-@ApiTags('interview')
+@ApiTags('Interview')
 export class InterviewController {
   constructor(private readonly interviewService: InterviewService) {}
 

@@ -30,6 +30,7 @@ import { JobCategoryModule } from './modules/job-category/job-category.module';
 import { JobOpeningModule } from './modules/job-opening/job-opening.module';
 import { MajorModule } from './modules/major/major.module';
 import { OpenAIModule } from './modules/openai/openai.module';
+import { ResumeParserModule } from './modules/resume-parser/resume-parser.module';
 import { SkillModule } from './modules/skill/skill.module';
 import { TCModule } from './modules/tc/tc.module';
 import { UserModule } from './modules/user/user.module';
@@ -75,6 +76,7 @@ import { UserModule } from './modules/user/user.module';
     DegreeModule,
     TCModule,
     InterviewModule,
+    ResumeParserModule,
   ],
   controllers: [],
   providers: [

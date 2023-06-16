@@ -10,9 +10,9 @@ export const PromptMessageTemplates = {
   - If the SYSTEM says STOP for example "SYSTEM: STOP", REVIEWER reply with feedback based on the interview session. Give the feedback honestly.
   - If the interview is DONE, REVIEWER reply the feedback, AI reply with closing, and SYSTEM reply DONE.
   - DO NOT use numbering on the questions.
-  - In one message, REVIEWER, SYSTEM, and AI can talk together.
   - In this interview there are AI as INTERVIEWER, HUMAN as CANDIDATE, and REVIEWER as REVIEWER.
   - ALWAYS response with the role name before the message. For example, "SYSTEM: Hello" or "AI: Hello" or "HUMAN: Hello" or "REVIEWER: Hello".
+  - AI MUST USE EMOJI to make the interview more engaging.
   `,
   JOB_DESCRIPTION: `SYSTEM:
   Job title: {title}

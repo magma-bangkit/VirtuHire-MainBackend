@@ -60,8 +60,24 @@ export class JobOpeningController {
   }
 
   @Get('search')
-  async searchJobOpenings(@Query('q') search: string) {
-    return this.jobOpeningService.searchJobOpenings(search);
+  @ApiOperation({ summary: 'Search job openings' })
+  async searchJobOpenings(
+    @Query('q') search: string,
+    @Paginate() query: Omit<PaginateQuery, 'search' | 'filter' | 'select'>,
+  ) {
+    const result = await this.jobOpeningService.searchJobOpenings(
+      search,
+      query,
+    );
+
+    if (result.isErr()) {
+      throw APIError.fromMessage(
+        ApiErrorMessage.INTERNAL_SERVER_ERROR,
+        result.error.cause,
+      );
+    }
+
+    return result.value;
   }
 
   @ApiOperation({ summary: 'Get a job opening detail' })

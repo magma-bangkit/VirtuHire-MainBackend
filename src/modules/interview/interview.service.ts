@@ -54,6 +54,7 @@ export class InterviewService {
         'interview.id',
         'interview.isDone',
         'interview.createdAt',
+        'interview.sessionId',
         'interview.updatedAt',
         'jobOpening.id',
         'jobOpening.title',
@@ -67,20 +68,32 @@ export class InterviewService {
   public async getInterviewHistoryById(userId: string, id: string) {
     const interview = await this.interviewRepo.findOne({
       where: { id, user: { id: userId } },
+      relations: ['jobOpening', 'jobOpening.company', 'jobOpening.city'],
     });
 
     if (!interview) {
       return err(new ServiceException('INTERVIEW_HISTORY_NOT_FOUND'));
     }
 
+    const unsavedChatHistories = await this.redis.lrange(
+      interview.sessionId,
+      0,
+      -1,
+    );
+    if (unsavedChatHistories.length !== 0) {
+      interview.chatHistories = unsavedChatHistories
+        .reverse()
+        .map((message) => JSON.parse(message) as StoredMessage);
+    }
+
     interview.chatHistories = interview.chatHistories.reduce(
       (acc: StoredMessage[], chat) => {
         if (ChatUtils.whoIsSpeaking(chat.data.content) !== 'system') {
-          chat.data.content = ChatUtils.stripMessageRole(chat.data.content);
-
           if (ChatUtils.whoIsSpeaking(chat.data.content) === 'reviewer') {
             chat.type = 'reviewer';
           }
+
+          chat.data.content = ChatUtils.stripMessageRole(chat.data.content);
 
           acc.push(chat);
         }
@@ -198,11 +211,11 @@ export class InterviewService {
     interviewHistory.chatHistories = interviewHistory.chatHistories.reduce(
       (acc: StoredMessage[], chat) => {
         if (ChatUtils.whoIsSpeaking(chat.data.content) !== 'system') {
-          chat.data.content = ChatUtils.stripMessageRole(chat.data.content);
-
           if (ChatUtils.whoIsSpeaking(chat.data.content) === 'reviewer') {
             chat.type = 'reviewer';
           }
+
+          chat.data.content = ChatUtils.stripMessageRole(chat.data.content);
 
           acc.push(chat);
         }
@@ -255,9 +268,9 @@ export class InterviewService {
       HumanMessagePromptTemplate.fromTemplate(
         PromptMessageTemplates.JOB_DESCRIPTION,
       ),
-      HumanMessagePromptTemplate.fromTemplate(
-        PromptMessageTemplates.HUMAN_INTRODUCTION,
-      ),
+      // HumanMessagePromptTemplate.fromTemplate(
+      //   PromptMessageTemplates.HUMAN_INTRODUCTION,
+      // ),
     ]);
 
     const job = jobResult.value;
@@ -283,6 +296,12 @@ export class InterviewService {
       return err(new ServiceException('INTERVIEWER_GOT_FEVER'));
     }
 
+    const rawChatHistory = await this.redis.lrange(sessionId, 0, -1);
+
+    const orderedHistory = rawChatHistory
+      .reverse()
+      .map((message) => JSON.parse(message) as StoredMessage);
+
     await this.interviewRepo.save(
       this.interviewRepo.create({
         user: {
@@ -292,6 +311,7 @@ export class InterviewService {
         jobOpening: {
           id: job.id,
         },
+        chatHistories: orderedHistory,
         isDone: false,
       }),
     );

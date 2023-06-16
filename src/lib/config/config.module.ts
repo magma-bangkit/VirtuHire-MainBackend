@@ -6,6 +6,7 @@ import cloudStorageConfig from './configs/cloud-storage.config';
 import dbConfig from './configs/db.config';
 import jwtConfig from './configs/jwt.config';
 import keyConfig from './configs/key.config';
+import milvusConfig from './configs/milvus.config';
 import oauthConfig from './configs/oauth.config';
 import openaiConfig from './configs/openai.config';
 import redisConfig from './configs/redis.config';
@@ -29,6 +30,7 @@ import throttleConfig from './configs/throttle.config';
         throttleConfig,
         openaiConfig,
         cloudStorageConfig,
+        milvusConfig,
       ],
     }),
   ],

@@ -7,12 +7,13 @@ import {
   PaginateQuery,
 } from 'nestjs-paginate';
 import { err, ok } from 'neverthrow';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { ServiceException } from '@/common/exceptions/service.exception';
 import { LoggedUserType } from '@/common/types/types/logged-user.type';
 import { JobOpening } from '@/entities/job-opening.entity';
 
+import { MilvusService } from '../milvus/milvus.service';
 import { OpenAIService } from '../openai/openai.service';
 
 @Injectable()
@@ -21,10 +22,11 @@ export class JobOpeningService {
     @InjectRepository(JobOpening)
     private readonly jobRepo: Repository<JobOpening>,
     private readonly openAIService: OpenAIService,
+    private readonly milvusService: MilvusService,
   ) {}
 
   private readonly paginationConfig: PaginateConfig<JobOpening> = {
-    sortableColumns: ['id', 'salaryFrom', 'createdAt', 'updatedAt'],
+    sortableColumns: ['id', 'salaryFrom', 'salaryTo', 'createdAt', 'updatedAt'],
     nullSort: 'last',
     defaultLimit: 10,
     defaultSortBy: [['updatedAt', 'ASC']],
@@ -173,54 +175,44 @@ export class JobOpeningService {
     return paginate<JobOpening>(query, queryBuilder, this.paginationConfig);
   }
 
-  public async searchJobOpenings(search: string) {
-    const queryBuilder = this.jobRepo
-      .createQueryBuilder('job')
-      .leftJoinAndSelect('job.category', 'category')
-      .leftJoinAndSelect('job.company', 'company')
-      .leftJoinAndSelect('job.city', 'city')
-      .leftJoinAndSelect('job.skillRequirements', 'skillRequirements')
-      .select([
-        'job.id',
-        'job.title',
-        'job.description',
-        'job.source',
-        'job.jobType',
-        'job.salaryFrom',
-        'job.salaryTo',
-        'job.createdAt',
-        'job.updatedAt',
-        'job.search_vector',
-        'city.name',
-        'city.id',
-        'company',
-        'category.name',
-        'category.id',
-        'skillRequirements.name',
-        'skillRequirements.id',
-      ]);
+  public async searchJobOpenings(search: string, query: PaginateQuery) {
+    query.limit = query.limit || 20;
+    query.page = query.page || 1;
 
     const searchVector = await this.openAIService.generateEmbeddings(search);
 
     if (searchVector.isErr()) {
       const e = searchVector.error;
 
-      return err(new ServiceException('INTERNAL_SERVER_ERROR', e.cause));
+      return err(new ServiceException('INTERNAL_SERVER_ERROR', e));
     }
 
-    queryBuilder
-      .addSelect([`1 - (job.search_vector <=> :queryEmbedding) as similarity`])
-      .andWhere(
-        `1 - (job.search_vector <=> :queryEmbedding) > :matchThreshold`,
-        {
-          queryEmbedding: `[${searchVector.value.join(',')}]`,
-          matchThreshold: 0.5,
-        },
-      )
-      .limit(10)
-      .orderBy('similarity', 'DESC');
+    const searchResult = await this.milvusService.searchVectors({
+      collectionName: 'job_posting',
+      limit: query.limit,
+      queryVectors: [searchVector.value],
+      // offset: query.limit * (query.page - 1),
+    });
 
-    return queryBuilder.getMany();
+    const matchResult = searchResult.results.map((result) => result.id);
+
+    const [jobOpenings, count] = await this.jobRepo.findAndCount({
+      where: { id: In(matchResult) },
+      relations: ['company', 'city', 'category', 'skillRequirements'],
+    });
+
+    const orderedJobOpenings = jobOpenings.sort(
+      (a, b) => matchResult.indexOf(a.id) - matchResult.indexOf(b.id),
+    );
+
+    return ok({
+      data: orderedJobOpenings,
+      meta: {
+        itemsPerPage: query.limit,
+        totalItems: count,
+        currentPage: query.page,
+      },
+    });
   }
 
   public async composeJobOpeningFromId(id: string) {

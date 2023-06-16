@@ -10,4 +10,5 @@ export const ConfigName = {
   OAUTH: 'oauth-config',
   OPENAI: 'openai-config',
   CLOUDSTORAGE: 'cloud-storage-config',
+  MILVUS: 'milvus-config',
 } as const;

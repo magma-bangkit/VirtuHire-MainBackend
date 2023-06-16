@@ -140,7 +140,7 @@ export class AuthController {
     };
   }
 
-  @Get('refresh')
+  @Post('refresh')
   @ApiOperation({ operationId: 'Refresh Access Token' })
   @ApiOkResponse({
     description: 'Return new access token',

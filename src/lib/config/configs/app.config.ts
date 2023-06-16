@@ -9,6 +9,7 @@ export interface IAppEnvConfig {
   isProduction: boolean;
   port: number;
   serverUrl: string;
+  mlApiUrl: string;
   swaggerEnabled: boolean;
   version: string;
 }
@@ -31,6 +32,10 @@ export default registerAs(ConfigName.APP, (): IAppEnvConfig => {
     },
     serverUrl: {
       value: process.env.SERVER_URL,
+      joi: Joi.string().required(),
+    },
+    mlApiUrl: {
+      value: process.env.ML_API_URL,
       joi: Joi.string().required(),
     },
     swaggerEnabled: {

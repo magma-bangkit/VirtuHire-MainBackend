@@ -1,19 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   MaxDate,
 } from 'class-validator';
+import dayjs from 'dayjs';
 
 import { JobType } from '@/common/types/enums/job-type.enum';
 
 export class CreateProfileDTO {
   @ApiProperty()
   @MaxDate(new Date(), { message: 'Birthday must be less than today' })
-  @Transform(({ value }) => new Date(value))
+  @Transform(({ value }) => dayjs(value).toDate())
   @IsNotEmpty({ message: 'Birthday is required' })
   readonly birthday: Date;
 
@@ -32,6 +35,7 @@ export class CreateProfileDTO {
   readonly majorId: number;
 
   @ApiProperty()
+  @IsDate()
   @Transform(({ value }) => new Date(value))
   @IsNotEmpty({ message: 'Education start date is required' })
   readonly educationStartDate: Date;
@@ -49,7 +53,7 @@ export class CreateProfileDTO {
     type: [Number],
   })
   @IsNumber({}, { each: true })
-  @IsNotEmpty({ message: 'Skills are required' })
+  @ArrayNotEmpty({ message: 'Skills are required' })
   readonly skills: number[];
 
   @ApiProperty()
@@ -59,14 +63,14 @@ export class CreateProfileDTO {
 
   @ApiProperty({ enum: JobType, isArray: true })
   @IsEnum(JobType, { each: true })
-  @IsNotEmpty({ message: 'Preferred job types are required' })
+  @ArrayNotEmpty({ message: 'Preferred job types are required' })
   readonly preferredJobTypes: JobType[];
 
   @ApiProperty({
     description: 'Expected Salary per month in IDR',
   })
   @IsNumber()
-  @IsNotEmpty({ message: 'Expected salary is required' })
+  @IsNotEmpty({ message: 'Expected salary is required', each: true })
   readonly expectedSalary: number;
 
   @ApiProperty({
@@ -74,7 +78,7 @@ export class CreateProfileDTO {
     type: [Number],
   })
   @IsNumber({}, { each: true })
-  @IsNotEmpty({ message: 'Preferred cities are required' })
+  @ArrayNotEmpty({ message: 'Preferred cities are required' })
   readonly preferredCities: number[];
 
   @ApiProperty({
@@ -82,6 +86,6 @@ export class CreateProfileDTO {
     type: [Number],
   })
   @IsNumber({}, { each: true })
-  @IsNotEmpty({ message: 'Preferred job categories are required' })
+  @ArrayNotEmpty({ message: 'Preferred job categories are required' })
   readonly preferredJobCategories: number[];
 }
