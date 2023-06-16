@@ -51,6 +51,6 @@ We would like to express our gratitude to the following individuals for their va
 
 - [Akhmad Thoriq](https://github.com/itstor)
 
-For more information you can visit the backend api documentation ![here](https://virtuhire-mainbackend-ixrxqk32pa-as.a.run.app/docs)
+For more information you can visit the backend api documentation [here](https://virtuhire-mainbackend-ixrxqk32pa-as.a.run.app/docs)
 
 Thank you all for your dedication, expertise, and continuous support!
