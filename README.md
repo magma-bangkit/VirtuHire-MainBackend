@@ -12,6 +12,7 @@ The backend of the mobile application for the interview assistant is the foundat
 
 - [Installation](#installation)
 - [Features](#features)
+- [ER Diagram](#erdiagram)
 - [Acknowledgements](#acknowledgements)
 
 ## Installation
@@ -43,6 +44,9 @@ $ pnpm install
 - ⚠️ Alerting users of new device login, password changes, and email changes through notifications via email
 - 💂 CASL for authorization
 - 🐚 Milvus for vector database
+
+# ER Diagram
+<a href="https://ibb.co/rdQx76p"><img src="https://i.ibb.co/BnfyzZ6/image.png" alt="image" border="0"></a>
 
 
 ## Acknowledgements
