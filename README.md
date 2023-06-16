@@ -16,7 +16,7 @@ The backend of the mobile application for the interview assistant is the foundat
 
 ## Installation
 
-How to install : (replace code below)
+How to install :
 
 ```bash
 $ git clone [https://github.com/your-username/your-repo.git](https://github.com/magma-bangkit/VirtuHire-MainBackend)
