@@ -110,7 +110,7 @@ export class InterviewService {
     let isDone = false;
 
     // Check if the sessionId belongs to the user
-    if (sessionId.split('-').slice(-1)[0] !== userId) {
+    if (sessionId.split('.').slice(-1)[0] !== userId) {
       return err(new ServiceException('INTERVIEW_SESSION_NOT_FOUND'));
     }
 
@@ -229,7 +229,7 @@ export class InterviewService {
 
   public async endInterview(sessionId: string, userId: string) {
     // Check if the sessionId belongs to the user
-    if (sessionId.split('-').slice(-1)[0] !== userId) {
+    if (sessionId.split('.').slice(-1)[0] !== userId) {
       return err(new ServiceException('INTERVIEW_SESSION_NOT_FOUND'));
     }
 

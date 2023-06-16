@@ -98,6 +98,6 @@ export class ChatUtils {
   }
 
   public static generateChatSessionId(userid: string) {
-    return 'ch_' + nanoid(10) + '-' + userid;
+    return 'ch_' + nanoid(10) + '.' + userid;
   }
 }
