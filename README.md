@@ -2,7 +2,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-View_on_GitHub-lightgrey.svg)](https://github.com/magma-bangkit/VirtuHire-MainBackend)
 
-Short project description or an introductory paragraph that explains what the project does and its main features. (replace this)
+The backend of the mobile application for the interview assistant is the foundation that powers a comprehensive and seamless experience for job seekers. It handles the core functionalities of the application, enabling intelligent and efficient support throughout the interview process. The backend manages user authentication, securely storing user profiles and interview data. It integrates with external APIs to do simulation interview with jobseeker. Additionally, the backend facilitates real-time communication, enabling users to practice interview scenarios with virtual interviewers or receive feedback from human experts. With its robust architecture and scalable design, the backend of the interview assistant application empowers job seekers to prepare effectively, build confidence, and enhance their chances of success in landing their dream job.
 
 ## Table of Contents
 
