@@ -43,7 +43,7 @@ $ pnpm install
 - 📱 Device login history with logout all devices feature
 - ⚠️ Alerting users of new device login, password changes, and email changes through notifications via email
 - 💂 CASL for authorization
-- 🐚 Milvus for vector database
+- 🐚 Milvus for vector database.
 
 # ER Diagram
 <a href="https://ibb.co/rdQx76p"><img src="https://i.ibb.co/BnfyzZ6/image.png" alt="image" border="0"></a>
